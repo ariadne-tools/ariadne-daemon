@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	FILESDB       = "files.db"
-	WATCHEDDIRSDB = "watched_dirs.db"
-	COMMIT_FREQ   = 2 * time.Second
+	filesdb       = "files.db"
+	watcheddirsdb = "watched_dirs.db"
+	commitFreq    = 2 * time.Second
 )
 
 var cfgFile string
@@ -41,8 +41,8 @@ complete list of your files and directories of your chosen dir(s).`,
 }
 
 type runOptions struct {
-	workingDir string
-	logLevel   int
+	workDir  string
+	logLevel int
 }
 
 var runOpts runOptions
@@ -50,7 +50,7 @@ var runOpts runOptions
 func runRoot(options runOptions, args []string) {
 	fmt.Println("Welcome to Ariadne daemon!")
 
-	fmt.Println("watchedDirsDB", runOpts.workingDir)
+	fmt.Println("watchedDirsDB", runOpts.workDir)
 	fmt.Println("loglevel", runOpts.logLevel)
 
 	// set dir to the path of the executable
@@ -63,8 +63,8 @@ func runRoot(options runOptions, args []string) {
 
 	wg := new(sync.WaitGroup)
 
-	filesDbConn := dbconnect.NewDbConnector(path.Join(dir, FILESDB), COMMIT_FREQ, wg)
-	watchedDbConn := dbconnect.NewDbConnector(path.Join(dir, WATCHEDDIRSDB), 0, wg)
+	filesDbConn := dbconnect.NewDbConnector(path.Join(dir, filesdb), commitFreq, wg)
+	watchedDbConn := dbconnect.NewDbConnector(path.Join(dir, watcheddirsdb), 0, wg)
 	defer filesDbConn.DB.Close()
 	defer watchedDbConn.DB.Close()
 
@@ -98,7 +98,7 @@ func Execute() {
 func init() {
 
 	runFlags := rootCmd.Flags()
-	runFlags.StringVar(&runOpts.workingDir, "workingdir", "~/.config/ariadne-daemon", "set the location of the daemon's working directory")
+	runFlags.StringVar(&runOpts.workDir, "workdir", "~/.config/ariadne-daemon", "set the location of the daemon's working directory")
 	runFlags.IntVar(&runOpts.logLevel, "loglevel", 0, "Set the loglevel. 0 means basic level, 1 means debug level")
 
 	// Here you will define your flags and configuration settings.

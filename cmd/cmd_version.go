@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "whatever??"
+var version string // it will get value at compile time
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print version information",

@@ -40,6 +40,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -49,6 +50,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // config contains the configuration for the program to build.
@@ -326,6 +329,25 @@ func (v GoVersion) String() string {
 	return fmt.Sprintf("Go %d.%d.%d", v.Major, v.Minor, v.Patch)
 }
 
+func generateDB(dbFname, sqlFname string) error {
+
+	content, err := ioutil.ReadFile(sqlFname)
+	if err != nil {
+		return err
+	}
+
+	if err := os.Truncate(dbFname, 0); err != nil {
+		return err
+	}
+
+	dbConn, _ := sql.Open("sqlite3", dbFname)
+	if _, err := dbConn.Exec(string(content)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	if !goVersion.AtLeast(GoVersion{1, 12, 0}) {
 		die("Go version (%v) is too old, restic requires Go >= 1.12\n", goVersion)
@@ -455,6 +477,13 @@ func main() {
 		"-ldflags", ldflags,
 		"-o", output, buildTarget,
 	)
+
+	dbs := []string{"files.db", "watched_dirs.db"}
+	for _, db := range dbs {
+		if err := generateDB(filepath.Join(root, db), filepath.Join(root, db+".sql")); err != nil {
+			die("could not generate new files.db file: %v\n", err)
+		}
+	}
 
 	err = build(buildCWD, env, buildArgs...)
 	if err != nil {
