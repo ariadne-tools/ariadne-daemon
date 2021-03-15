@@ -336,8 +336,10 @@ func generateDB(dbFname, sqlFname string) error {
 		return err
 	}
 
-	if err := os.Truncate(dbFname, 0); err != nil {
+	if f, err := os.Create(dbFname); err != nil {
 		return err
+	} else {
+		f.Close()
 	}
 
 	dbConn, _ := sql.Open("sqlite3", dbFname)
