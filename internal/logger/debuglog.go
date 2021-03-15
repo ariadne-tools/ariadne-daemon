@@ -2,10 +2,10 @@ package logger
 
 import "log"
 
-var debugLog bool = true
+var LogLevel int = 0
 
 func DebugLog(args ...interface{}) {
-	if debugLog {
+	if LogLevel == 1 {
 		log.Println(args...)
 	}
 }

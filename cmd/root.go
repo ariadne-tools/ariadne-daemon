@@ -8,6 +8,7 @@ import (
 	"net/rpc"
 	"os"
 	"path"
+	"strconv"
 	"sync"
 	"time"
 
@@ -25,7 +26,7 @@ const (
 	commitFreq    = 2 * time.Second
 )
 
-var cfgFile string
+//var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -43,15 +44,20 @@ complete list of your files and directories of your chosen dir(s).`,
 type runOptions struct {
 	workDir  string
 	logLevel int
+	port     int
 }
 
 var runOpts runOptions
 
 func runRoot(options runOptions, args []string) {
+
+	logger.LogLevel = runOpts.logLevel
+
 	fmt.Println("Welcome to Ariadne daemon!")
 
 	fmt.Println("watchedDirsDB", runOpts.workDir)
-	fmt.Println("loglevel", runOpts.logLevel)
+	fmt.Println("loglevel", logger.LogLevel)
+	fmt.Println("port", runOpts.port)
 
 	// set dir to the path of the executable
 	var dir string
@@ -78,7 +84,7 @@ func runRoot(options runOptions, args []string) {
 	http.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
 		io.WriteString(res, "Ariadne's RPC server live!")
 	})
-	go http.ListenAndServe(":9000", nil)
+	go http.ListenAndServe(":"+strconv.Itoa(runOpts.port), nil)
 
 	go handlergenerator.ProcHandlerGenerator(watchedDbConn, filesDbConn, wg)
 
@@ -99,7 +105,8 @@ func init() {
 
 	runFlags := rootCmd.Flags()
 	runFlags.StringVar(&runOpts.workDir, "workdir", "~/.config/ariadne-daemon", "set the location of the daemon's working directory")
-	runFlags.IntVar(&runOpts.logLevel, "loglevel", 0, "Set the loglevel. 0 means basic level, 1 means debug level")
+	runFlags.IntVar(&runOpts.logLevel, "loglevel", 0, "Set the loglevel. 0 means basic level, 1 means debug level (default 0)")
+	runFlags.IntVarP(&runOpts.port, "port", "p", 9000, "The port number to listen on")
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
