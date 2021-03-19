@@ -34,7 +34,7 @@ func (ph *ProcHandler) Handle() {
 
 	watchedDir := ph.getWatchedDir()
 	if err := notify.Watch(path.Join(watchedDir, "..."), c, notify.All); err != nil {
-		log.Println("WARNING: Handling file system events failed for the following dir: ", err)
+		logger.BasicLog("WARNING: Handling file system events failed for the following dir: ", err)
 	} else {
 		defer notify.Stop(c)
 	}
@@ -133,7 +133,7 @@ func (ph *ProcHandler) index() {
 				return io.EOF
 			default:
 				if err != nil {
-					log.Println("index -> ", err)
+					logger.BasicLog("index -> ", err)
 					return nil
 				} else {
 					dir, file := filepath.Split(path)
