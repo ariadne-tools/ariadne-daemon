@@ -3,16 +3,48 @@ package logger
 import (
 	"log"
 	"os"
+	"strings"
 )
+
+type LogLevel int
 
 var (
-	verbosity int
-	logfile   *os.File    = os.Stdout
-	lgr       *log.Logger = log.New(logfile, "", log.LstdFlags)
+	loglevel LogLevel
+	logfile  *os.File    = os.Stdout
+	lgr      *log.Logger = log.New(logfile, "", log.LstdFlags)
+
+	LOGLEVEL = map[string]LogLevel{
+		"OFF":   0b00000000,
+		"FATAL": 0b00000001,
+		"ERROR": 0b00000010,
+		"WARN":  0b00000100,
+		"INFO":  0b00001000,
+		"DEBUG": 0b00010000,
+		"TRACE": 0b00100000,
+		"ALL":   0b00111111,
+	}
 )
 
-func Init(filepath string, v int) {
-	verbosity = v
+func levelGiven(s string) LogLevel {
+	f := func(c rune) bool {
+		return c == '|'
+	}
+	fields := strings.FieldsFunc(strings.ToUpper(s), f)
+	var level LogLevel
+
+	for _, field := range fields {
+		if l, in := LOGLEVEL[field]; !in {
+			log.Fatal("Bad log level given: ", field)
+		} else {
+			level |= l
+		}
+	}
+
+	return level
+}
+
+func Init(filepath string, s string) {
+	loglevel = levelGiven(s)
 	if filepath != "" {
 		var err error
 		// If the file doesn't exist, create it, or append to existed
@@ -40,14 +72,16 @@ func CreateFile(name string) error {
 	}
 }
 
-func BasicLog(args ...interface{}) {
-	if verbosity >= 0 {
+func loggerLog(level LogLevel, args ...interface{}) {
+	if level&loglevel == level {
 		lgr.Println(args...)
 	}
 }
 
+func BasicLog(args ...interface{}) {
+	loggerLog(LOGLEVEL["INFO"], args...)
+}
+
 func DebugLog(args ...interface{}) {
-	if verbosity >= 1 {
-		lgr.Println(args...)
-	}
+	loggerLog(LOGLEVEL["DEBUG"], args...)
 }

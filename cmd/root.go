@@ -42,17 +42,17 @@ complete list of your files and directories of your chosen dir(s).`,
 }
 
 type runOptions struct {
-	workDir   string
-	verbosity int
-	port      int
-	logfile   string
+	workDir  string
+	port     int
+	logfile  string
+	loglevel string
 }
 
 var runOpts runOptions
 
 func runRoot(options runOptions, args []string) {
 
-	logger.Init(runOpts.logfile, runOpts.verbosity)
+	logger.Init(runOpts.logfile, runOpts.loglevel)
 
 	logger.BasicLog("Welcome to Ariadne daemon!")
 
@@ -102,8 +102,8 @@ func init() {
 
 	runFlags := rootCmd.Flags()
 	runFlags.StringVar(&runOpts.workDir, "workdir", ".", "set the location of the daemon's working directory")
-	runFlags.StringVarP(&runOpts.logfile, "log-file", "l", "", "specify logfile (default is STDOUT)")
-	runFlags.IntVarP(&runOpts.verbosity, "verbose", "v", 0, "verbosity level can be 0 or 1")
+	runFlags.StringVar(&runOpts.logfile, "log-file", "", "specify logfile (default is STDOUT)")
+	runFlags.StringVar(&runOpts.loglevel, "log-level", "info|warn|error|fatal", "log level can be off, fatal, error, warn, info, debug, trace, and all. Use '|' operator to use multiple levels.")
 	runFlags.IntVarP(&runOpts.port, "port", "p", 9000, "The port number to listen on")
 
 	// Here you will define your flags and configuration settings.
