@@ -14,22 +14,22 @@ var (
 	lgr      *log.Logger = log.New(logfile, "", log.LstdFlags)
 
 	LOGLEVEL = map[string]LogLevel{
-		"OFF":   0b00000000,
-		"FATAL": 0b00000001,
-		"ERROR": 0b00000010,
-		"WARN":  0b00000100,
-		"INFO":  0b00001000,
-		"DEBUG": 0b00010000,
-		"TRACE": 0b00100000,
-		"ALL":   0b00111111,
+		"off":   0b00000000,
+		"fatal": 0b00000001,
+		"error": 0b00000010,
+		"warn":  0b00000100,
+		"info":  0b00001000,
+		"debug": 0b00010000,
+		"trace": 0b00100000,
+		"all":   0b00111111,
 	}
 )
 
-func levelGiven(s string) LogLevel {
+func levelArg(s string) LogLevel {
 	f := func(c rune) bool {
 		return c == '|'
 	}
-	fields := strings.FieldsFunc(strings.ToUpper(s), f)
+	fields := strings.FieldsFunc(strings.ToLower(s), f)
 	var level LogLevel
 
 	for _, field := range fields {
@@ -44,7 +44,7 @@ func levelGiven(s string) LogLevel {
 }
 
 func Init(filepath string, s string) {
-	loglevel = levelGiven(s)
+	loglevel = levelArg(s)
 	if filepath != "" {
 		var err error
 		// If the file doesn't exist, create it, or append to existed
@@ -56,32 +56,20 @@ func Init(filepath string, s string) {
 	}
 }
 
-func FileExists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		return !os.IsNotExist(err)
-	}
-	return true
-}
-
-func CreateFile(name string) error {
-	if f, err := os.Create(name); err != nil {
-		return err
-	} else {
-		f.Close()
-		return nil
+func loggerLog(levelName string, args ...interface{}) {
+	if LOGLEVEL[levelName]&loglevel != 0 {
+		l := []interface{}{"[" + levelName + "]"}
+		for _, a := range args {
+			l = append(l, a)
+		}
+		lgr.Println(l...)
 	}
 }
 
-func loggerLog(level LogLevel, args ...interface{}) {
-	if level&loglevel == level {
-		lgr.Println(args...)
-	}
-}
-
-func BasicLog(args ...interface{}) {
-	loggerLog(LOGLEVEL["INFO"], args...)
+func InfoLog(args ...interface{}) {
+	loggerLog("info", args...)
 }
 
 func DebugLog(args ...interface{}) {
-	loggerLog(LOGLEVEL["DEBUG"], args...)
+	loggerLog("debug", args...)
 }

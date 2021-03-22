@@ -331,11 +331,13 @@ func (v GoVersion) String() string {
 
 func generateDB(dbFname, sqlFname string) error {
 
+	// read the file contains the sql statements
 	content, err := ioutil.ReadFile(sqlFname)
 	if err != nil {
 		return err
 	}
 
+	// create new empty db
 	if f, err := os.Create(dbFname); err != nil {
 		return err
 	} else {

@@ -54,7 +54,7 @@ func runRoot(options runOptions, args []string) {
 
 	logger.Init(runOpts.logfile, runOpts.loglevel)
 
-	logger.BasicLog("Welcome to Ariadne daemon!")
+	logger.InfoLog("Welcome to Ariadne daemon!")
 
 	// set dir to the path of the executable
 	var dir string
